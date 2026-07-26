@@ -25,11 +25,11 @@ export default function MainMenu() {
         transition={{ delay: 0.2, type: 'spring', stiffness: 100 }}
         className="mb-12 text-center"
       >
-        <h1 className="text-6xl md:text-8xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-neonCyan to-neonMagenta drop-shadow-glowCyan">
-          SYNAPSE
+        <h1 className="text-6xl md:text-8xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 drop-shadow-glowCyan">
+          ENGG. DRIVING
         </h1>
         <h2 className="text-2xl md:text-4xl font-bold font-inter text-white tracking-[0.3em] mt-2 opacity-80 uppercase">
-          Neon Override
+          Next Gen Simulator
         </h2>
       </motion.div>
 

@@ -2,24 +2,16 @@ import { create } from 'zustand';
 
 export const useGameStore = create((set) => ({
   gameState: 'menu', // 'menu', 'playing', 'gameover'
-  score: 0,
-  speed: 40, // Faster game speed for arcade feel
+  speed: 0, // Current speed in km/h
+  distance: 0, // Distance traveled in meters
   timeDilation: 1.0, 
-  currentLane: 0, // -1: Left, 0: Center, 1: Right
   
-  startGame: () => set({ gameState: 'playing', score: 0, speed: 40, timeDilation: 1.0, currentLane: 0 }),
+  startGame: () => set({ gameState: 'playing', speed: 20, distance: 0, timeDilation: 1.0 }),
   endGame: () => set({ gameState: 'gameover' }),
-  goToMenu: () => set({ gameState: 'menu', score: 0, currentLane: 0 }),
+  goToMenu: () => set({ gameState: 'menu', speed: 0, distance: 0 }),
   
-  addScore: (points) => set((state) => ({ score: state.score + points })),
-  increaseSpeed: (amount) => set((state) => ({ speed: state.speed + amount })),
+  setSpeed: (val) => set({ speed: val }),
+  addDistance: (val) => set((state) => ({ distance: state.distance + val })),
   
   setTimeDilation: (value) => set({ timeDilation: value }),
-  
-  moveLane: (dir) => set((state) => {
-    let newLane = state.currentLane + dir;
-    if (newLane < -1) newLane = -1;
-    if (newLane > 1) newLane = 1;
-    return { currentLane: newLane };
-  }),
 }));

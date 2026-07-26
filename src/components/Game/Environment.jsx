@@ -1,69 +1,97 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { RigidBody } from '@react-three/rapier';
-import * as THREE from 'three';
 import { useGameStore } from '../../store/gameStore';
+import * as THREE from 'three';
 
 export default function Environment() {
-  const gridRef = useRef();
+  const roadRef = useRef();
   
   const speed = useGameStore((state) => state.speed);
-  const timeDilation = useGameStore((state) => state.timeDilation);
   
   useFrame((state, delta) => {
-    if (gridRef.current) {
-      // Texture sliding speed based on actual game speed
-      gridRef.current.material.map.offset.y -= delta * (speed / 10) * timeDilation;
+    if (roadRef.current && speed > 0) {
+      // Move texture to simulate driving forward
+      roadRef.current.material.map.offset.y -= delta * (speed / 100);
+      
+      // Update distance in store
+      useGameStore.getState().addDistance(speed * delta * 0.1);
     }
   });
 
-  // Create a glowing grid texture dynamically
-  const createGridTexture = () => {
+  // Create Asphalt Texture with Lane Markings
+  const createRoadTexture = () => {
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const context = canvas.getContext('2d');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
 
-    context.fillStyle = '#050505';
-    context.fillRect(0, 0, 512, 512);
-
-    context.strokeStyle = '#ff00ff';
-    context.lineWidth = 4;
+    // Asphalt background
+    ctx.fillStyle = '#222222';
+    ctx.fillRect(0, 0, 1024, 1024);
     
-    context.beginPath();
-    context.moveTo(256, 0);
-    context.lineTo(256, 512);
-    context.moveTo(0, 256);
-    context.lineTo(512, 256);
-    context.stroke();
+    // Add some noise for asphalt realism
+    for (let i = 0; i < 5000; i++) {
+      ctx.fillStyle = Math.random() > 0.5 ? '#1a1a1a' : '#2a2a2a';
+      ctx.fillRect(Math.random() * 1024, Math.random() * 1024, 4, 4);
+    }
+
+    // Lane Markings (White dashed lines)
+    ctx.fillStyle = '#ffffff';
+    // Left Lane Divider
+    for (let y = 0; y < 1024; y += 128) {
+      ctx.fillRect(341 - 10, y + 32, 20, 64);
+    }
+    // Right Lane Divider
+    for (let y = 0; y < 1024; y += 128) {
+      ctx.fillRect(682 - 10, y + 32, 20, 64);
+    }
+
+    // Yellow solid boundary lines
+    ctx.fillStyle = '#ffcc00';
+    ctx.fillRect(20, 0, 15, 1024);
+    ctx.fillRect(1024 - 35, 0, 15, 1024);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(20, 100);
+    texture.repeat.set(1, 20); // Repeat along Y axis
     return texture;
   };
 
-  const gridTexture = createGridTexture();
+  const roadTexture = React.useMemo(() => createRoadTexture(), []);
 
   return (
     <group>
-      {/* Synthwave Sun */}
-      <mesh position={[0, 10, -50]}>
-        <circleGeometry args={[15, 64]} />
-        <meshBasicMaterial color="#ff00a0" />
+      {/* City Sky / Ambient Box */}
+      <mesh position={[0, 50, -200]}>
+        <boxGeometry args={[400, 100, 10]} />
+        <meshBasicMaterial color="#87CEEB" /> {/* Day Sky */}
       </mesh>
 
-      {/* Grid Floor with Physics */}
-      <RigidBody type="fixed" position={[0, -0.99, -20]}>
-        <mesh receiveShadow ref={gridRef}>
-          <boxGeometry args={[100, 1, 200]} />
+      {/* Road with Physics */}
+      <RigidBody type="fixed" position={[0, -0.99, -50]}>
+        <mesh receiveShadow ref={roadRef}>
+          <boxGeometry args={[30, 1, 300]} />
           <meshStandardMaterial 
-            map={gridTexture}
-            emissive="#ff00ff"
-            emissiveIntensity={0.5}
-            emissiveMap={gridTexture}
+            map={roadTexture}
+            roughness={0.8}
+            metalness={0.1}
           />
+        </mesh>
+      </RigidBody>
+
+      {/* Sidewalks/Curbs */}
+      <RigidBody type="fixed" position={[-16, -0.5, -50]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[2, 1, 300]} />
+          <meshStandardMaterial color="#888888" roughness={0.9} />
+        </mesh>
+      </RigidBody>
+      <RigidBody type="fixed" position={[16, -0.5, -50]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[2, 1, 300]} />
+          <meshStandardMaterial color="#888888" roughness={0.9} />
         </mesh>
       </RigidBody>
     </group>
