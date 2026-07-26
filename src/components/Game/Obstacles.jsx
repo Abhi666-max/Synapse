@@ -1,82 +1,110 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { RigidBody } from '@react-three/rapier';
+import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { useGameStore } from '../../store/gameStore';
 
+const LANES = [-9, 0, 9];
+const OBSTACLE_COUNT = 15;
 const Z_SPAWN_START = -50;
-const Z_SPAWN_END = -200;
-const TRAFFIC_COUNT = 20;
 
 export default function Obstacles() {
   const gameState = useGameStore((state) => state.gameState);
-  const playerSpeed = useGameStore((state) => state.speed);
+  const speed = useGameStore((state) => state.speed);
+  const groupRef = useRef();
   
-  const [traffic, setTraffic] = useState(() => generateTraffic());
+  // Use state only for initial render, then mutate for performance
+  const [obstaclesList, setObstaclesList] = useState([]);
+  const obstaclesData = useRef([]);
 
-  function generateTraffic() {
-    return Array.from({ length: TRAFFIC_COUNT }).map((_, i) => {
-      // Pick a random X within the road boundaries (-14 to 14)
-      const xPos = (Math.random() - 0.5) * 28; 
-      return {
-        id: i,
-        x: xPos,
-        z: Z_SPAWN_START - Math.random() * 150,
-        // Traffic speed (some are fast, some are slow)
-        speed: 20 + Math.random() * 40, 
-        color: `hsl(${Math.random() * 360}, 80%, 50%)`
-      };
-    });
+  function generateObstacles() {
+    let obs = [];
+    let currentZ = Z_SPAWN_START;
+    
+    for (let i = 0; i < OBSTACLE_COUNT; i++) {
+      // Pick 1 or 2 lanes to block, leaving at least 1 lane open
+      const blockedLanesCount = Math.random() > 0.5 ? 2 : 1;
+      let availableLanes = [0, 1, 2];
+      
+      // Shuffle array
+      for (let j = availableLanes.length - 1; j > 0; j--) {
+        const k = Math.floor(Math.random() * (j + 1));
+        [availableLanes[j], availableLanes[k]] = [availableLanes[k], availableLanes[j]];
+      }
+      
+      for (let j = 0; j < blockedLanesCount; j++) {
+        obs.push({
+          id: `${i}-${j}`,
+          laneIndex: availableLanes[j],
+          x: LANES[availableLanes[j]],
+          z: currentZ,
+          type: Math.random() > 0.5 ? 'cow' : 'rock'
+        });
+      }
+      
+      currentZ -= 40 + Math.random() * 60; // Space between obstacle rows
+    }
+    return obs;
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (gameState === 'playing') {
-      setTraffic(generateTraffic());
+      const newObs = generateObstacles();
+      obstaclesData.current = newObs;
+      setObstaclesList(newObs);
+      useGameStore.getState().obstacles = newObs; // Mutate store directly for bots to read without re-renders
+    } else {
+      setObstaclesList([]);
     }
   }, [gameState]);
 
   useFrame((state, delta) => {
-    if (gameState !== 'playing') return;
-    
-    setTraffic((prev) => 
-      prev.map((car) => {
-        // The perceived speed of the traffic car relative to the player
-        // If player is faster, traffic comes towards the camera (positive Z)
-        // If traffic is faster, it moves away (negative Z)
-        const relativeSpeed = playerSpeed - car.speed;
-        
-        let newZ = car.z + (relativeSpeed * delta * 0.5);
-        
-        // If car is too far behind or too far ahead, respawn
-        if (newZ > 20 || newZ < Z_SPAWN_END - 50) {
-          newZ = Z_SPAWN_END;
-          car.x = (Math.random() - 0.5) * 28;
-          car.speed = 20 + Math.random() * 40;
+    if (gameState !== 'playing' || speed === 0) return;
+
+    for (let obs of obstaclesData.current) {
+      // Move obstacles towards player (since player is static Z=0)
+      // 0.3 factor syncs with the ground texture movement
+      obs.z += speed * delta * 0.3; 
+      
+      // Respawn when behind camera
+      if (obs.z > 20) {
+        obs.z -= (300 + Math.random() * 100);
+        obs.laneIndex = Math.floor(Math.random() * 3);
+        obs.x = LANES[obs.laneIndex];
+        obs.type = Math.random() > 0.5 ? 'cow' : 'rock';
+      }
+    }
+
+    // Update meshes visually
+    if (groupRef.current) {
+      groupRef.current.children.forEach((child, index) => {
+        const data = obstaclesData.current[index];
+        if (data && child) {
+          // Update Kinematic body translation directly
+          child.position.set(data.x, 0.5, data.z);
         }
-        
-        return { ...car, z: newZ };
-      })
-    );
+      });
+    }
   });
 
   return (
-    <group>
-      {traffic.map((car) => (
-        <RigidBody 
-          key={car.id} 
-          type="kinematicPosition" 
-          position={[car.x, 0, car.z]}
-          name="traffic"
-        >
-          {/* Simple Traffic Car Mesh */}
-          <mesh position={[0, 0.5, 0]} castShadow>
-            <boxGeometry args={[1.8, 1, 4]} />
-            <meshStandardMaterial color={car.color} roughness={0.4} metalness={0.6} />
-          </mesh>
-          <mesh position={[0, 1.2, 0.5]} castShadow>
-            <boxGeometry args={[1.6, 0.5, 2]} />
-            <meshStandardMaterial color="#111111" />
-          </mesh>
-        </RigidBody>
+    <group ref={groupRef}>
+      {obstaclesList.map((obs, i) => (
+        <group key={obs.id} name="obstacle" position={[obs.x, 0.5, obs.z]}>
+          {/* We use a simple group with name="obstacle" for collision detection via distance, 
+              or we can attach a RigidBody. Using RigidBody for everything is fine too. */}
+          <RigidBody 
+            type="kinematicPosition" 
+            name="obstacle"
+            colliders={false}
+          >
+            <CuboidCollider args={[1.5, 1, 1.5]} sensor />
+            <mesh castShadow position={[0, 0, 0]}>
+              <boxGeometry args={[3, 2, 3]} />
+              {/* Brown for cow/buffalo, Grey for rocks */}
+              <meshStandardMaterial color={obs.type === 'cow' ? '#5c3a21' : '#666666'} />
+            </mesh>
+          </RigidBody>
+        </group>
       ))}
     </group>
   );

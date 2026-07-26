@@ -4,7 +4,7 @@ import { useGameStore } from '../../store/gameStore';
 import { RotateCcw, Home } from 'lucide-react';
 
 export default function GameOver() {
-  const score = useGameStore((state) => state.score);
+  const distance = useGameStore((state) => state.distance);
   const startGame = useGameStore((state) => state.startGame);
   const goToMenu = useGameStore((state) => state.goToMenu);
 
@@ -28,7 +28,7 @@ export default function GameOver() {
 
         <div className="mb-10">
           <p className="text-neonCyan font-orbitron text-sm tracking-widest opacity-80 uppercase mb-2">Final Score</p>
-          <p className="text-white font-inter font-black text-6xl drop-shadow-glowCyan">{score.toLocaleString()}</p>
+          <p className="text-white font-inter font-black text-6xl drop-shadow-glowCyan">{Math.floor(distance).toLocaleString()}</p>
         </div>
 
         <div className="flex flex-col md:flex-row gap-4 justify-center">

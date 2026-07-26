@@ -11,37 +11,42 @@ import Environment from './components/Game/Environment';
 import Obstacles from './components/Game/Obstacles';
 import { useGameStore } from './store/gameStore';
 
+import Bots from './components/Game/Bots';
+
 function GameScene() {
   const gameState = useGameStore((state) => state.gameState);
 
   return (
     <>
-      {/* Lighting */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 20, 10]} intensity={1.5} color="#00f3ff" />
-      <pointLight position={[-10, 5, -10]} intensity={2} color="#ff00ff" />
-      <fog attach="fog" args={['#050505', 10, 50]} />
+      {/* Sunset Village Lighting */}
+      <ambientLight intensity={0.4} color="#ffd8b1" />
+      <directionalLight position={[-20, 15, -50]} intensity={1.5} color="#ff7a00" castShadow />
+      <pointLight position={[0, 10, -100]} intensity={1.2} color="#ff3300" />
+      
+      {/* Pushed fog far back for visibility */}
+      <fog attach="fog" args={['#2a1636', 50, 300]} />
 
       {/* Physics World */}
       <Physics gravity={[0, -30, 0]} paused={gameState !== 'playing'}>
         <Environment />
         <Player />
+        <Bots />
         <Obstacles />
       </Physics>
       
-      {/* Post-Processing Effects for Premium Look */}
+      {/* Post-Processing Effects for Evening Glow */}
       <EffectComposer disableNormalPass multisampling={4}>
         <Bloom 
-          luminanceThreshold={0.2} 
+          luminanceThreshold={0.4} 
           luminanceSmoothing={0.9} 
           height={300} 
-          intensity={1.5} 
+          intensity={1.0} 
         />
         <ChromaticAberration 
-          offset={[0.003, 0.003]} 
+          offset={[0.001, 0.001]} 
           blendFunction={BlendFunction.NORMAL} 
         />
-        <Noise opacity={0.03} />
+        <Noise opacity={0.02} />
       </EffectComposer>
     </>
   );

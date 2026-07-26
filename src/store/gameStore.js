@@ -5,10 +5,21 @@ export const useGameStore = create((set) => ({
   speed: 0, // Current speed in km/h
   distance: 0, // Distance traveled in meters
   timeDilation: 1.0, 
+  bots: Array(5).fill({ lane: 1, z: 0, crashed: false, speed: 0 }),
+  obstacles: [],
   
-  startGame: () => set({ gameState: 'playing', speed: 20, distance: 0, timeDilation: 1.0 }),
-  endGame: () => set({ gameState: 'gameover' }),
-  goToMenu: () => set({ gameState: 'menu', speed: 0, distance: 0 }),
+  setBots: (botsData) => set({ bots: botsData }),
+  setObstacles: (obs) => set({ obstacles: obs }),
+  
+  startGame: () => set({ gameState: 'playing', speed: 20, distance: 0, timeDilation: 1.0, bots: Array(5).fill({ lane: 1, z: 0, crashed: false, speed: 0 }), obstacles: [] }),
+  endGame: () => set({ gameState: 'gameover', speed: 0 }),
+  resetGame: () => set({ 
+    gameState: 'menu', 
+    distance: 0, 
+    speed: 0,
+    bots: Array(5).fill({ lane: 1, z: 0, crashed: false, speed: 0 }),
+    obstacles: []
+  }),
   
   setSpeed: (val) => set({ speed: val }),
   addDistance: (val) => set((state) => ({ distance: state.distance + val })),

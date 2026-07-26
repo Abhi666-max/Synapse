@@ -66,9 +66,10 @@ export default function HUD() {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-white/50 font-orbitron font-bold text-lg tracking-widest bg-black/40 px-6 py-2 rounded-full"
+          className="text-white/50 font-orbitron font-bold text-lg tracking-widest bg-black/40 px-6 py-2 rounded-full flex flex-col"
         >
-          Use W/S to Accelerate/Brake • A/D to Steer
+          <span>Use W/S/Arrows to Move • A/D/Arrows to Steer</span>
+          <span className="text-sm mt-1 text-neonCyan">Press 'C' to Change Camera Angle</span>
         </motion.div>
       </div>
     </div>
