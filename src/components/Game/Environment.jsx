@@ -51,9 +51,9 @@ export default function Environment() {
       </mesh>
 
       {/* Grid Floor with Physics */}
-      <RigidBody type="fixed" position={[0, -0.49, -20]}>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow ref={gridRef}>
-          <planeGeometry args={[100, 200]} />
+      <RigidBody type="fixed" position={[0, -0.99, -20]}>
+        <mesh receiveShadow ref={gridRef}>
+          <boxGeometry args={[100, 1, 200]} />
           <meshStandardMaterial 
             map={gridTexture}
             emissive="#ff00ff"
