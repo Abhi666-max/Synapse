@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
 
 export default function Environment() {
@@ -49,16 +50,18 @@ export default function Environment() {
         <meshBasicMaterial color="#ff00a0" />
       </mesh>
 
-      {/* Grid Floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.49, -20]} receiveShadow>
-        <planeGeometry args={[100, 200]} />
-        <meshStandardMaterial 
-          map={gridTexture}
-          emissive="#ff00ff"
-          emissiveIntensity={0.5}
-          emissiveMap={gridTexture}
-        />
-      </mesh>
+      {/* Grid Floor with Physics */}
+      <RigidBody type="fixed" position={[0, -0.49, -20]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow ref={gridRef}>
+          <planeGeometry args={[100, 200]} />
+          <meshStandardMaterial 
+            map={gridTexture}
+            emissive="#ff00ff"
+            emissiveIntensity={0.5}
+            emissiveMap={gridTexture}
+          />
+        </mesh>
+      </RigidBody>
     </group>
   );
 }
