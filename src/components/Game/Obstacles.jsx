@@ -12,17 +12,25 @@ export default function Obstacles() {
   const speed = useGameStore((state) => state.speed);
   const timeDilation = useGameStore((state) => state.timeDilation);
   
-  // Store obstacles in state
-  const [obstacles, setObstacles] = useState(() => 
-    Array.from({ length: OBSTACLE_COUNT }).map((_, i) => ({
+  const [obstacles, setObstacles] = useState(() => generateInitialObstacles());
+
+  function generateInitialObstacles() {
+    return Array.from({ length: OBSTACLE_COUNT }).map((_, i) => ({
       id: i,
-      x: (Math.random() - 0.5) * 16, // random x between -8 and 8
+      x: (Math.random() - 0.5) * 16,
       z: Z_SPAWN_START - Math.random() * 50,
       width: Math.random() * 3 + 1,
       isMoving: Math.random() > 0.7,
       moveSpeed: (Math.random() - 0.5) * 10
-    }))
-  );
+    }));
+  }
+
+  // Reset obstacles when game starts
+  React.useEffect(() => {
+    if (gameState === 'playing') {
+      setObstacles(generateInitialObstacles());
+    }
+  }, [gameState]);
 
   const groupRef = useRef();
 

@@ -78,29 +78,91 @@ export default function Player() {
       lockRotations
       onCollisionEnter={({ other }) => {
         // Simple Game Over collision logic
-        if (other.rigidBodyObject.name === 'obstacle') {
+        if (other.rigidBodyObject?.name === 'obstacle') {
           endGame();
         }
       }}
     >
       <mesh ref={playerMesh} castShadow>
-        {/* A futuristic hover car placeholder */}
-        <boxGeometry args={[1.2, 0.5, 2.5]} />
-        <meshStandardMaterial 
-          color="#00f3ff" 
-          emissive="#00f3ff" 
-          emissiveIntensity={2} 
-          toneMapped={false} 
-        />
-        
-        {/* Engine Glows */}
-        <mesh position={[-0.4, -0.2, 1.3]}>
-          <boxGeometry args={[0.3, 0.2, 0.2]} />
-          <meshStandardMaterial color="#ff00ff" emissive="#ff00ff" emissiveIntensity={5} toneMapped={false} />
+        {/* =========================================================
+            WANT A REAL BMW M4? DO THIS:
+            1. Download a BMW M4 model in .glb format (e.g., from Sketchfab).
+            2. Put the downloaded file (e.g., 'bmw_m4.glb') in the 'public' folder.
+            3. Import useGLTF from '@react-three/drei': 
+               import { useGLTF } from '@react-three/drei';
+            4. Load the model inside this component:
+               const { scene } = useGLTF('/bmw_m4.glb');
+            5. Replace this entire <mesh> block with:
+               <primitive object={scene} scale={[0.5, 0.5, 0.5]} />
+            ========================================================= */}
+            
+        {/* --- PROCEDURAL CYBER SPORTS CAR --- */}
+        {/* Main Body (Sleek Wedge) */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[1.4, 0.4, 3]} />
+          <meshStandardMaterial color="#0a0a0a" metalness={0.8} roughness={0.2} />
         </mesh>
-        <mesh position={[0.4, -0.2, 1.3]}>
-          <boxGeometry args={[0.3, 0.2, 0.2]} />
-          <meshStandardMaterial color="#ff00ff" emissive="#ff00ff" emissiveIntensity={5} toneMapped={false} />
+        
+        {/* Cabin / Windows */}
+        <mesh position={[0, 0.35, -0.2]}>
+          <boxGeometry args={[1, 0.4, 1.5]} />
+          <meshStandardMaterial color="#000000" metalness={1} roughness={0} />
+        </mesh>
+
+        {/* Neon Side Trims */}
+        <mesh position={[-0.71, 0, 0]}>
+          <boxGeometry args={[0.05, 0.1, 2.8]} />
+          <meshStandardMaterial color="#00f3ff" emissive="#00f3ff" emissiveIntensity={3} toneMapped={false} />
+        </mesh>
+        <mesh position={[0.71, 0, 0]}>
+          <boxGeometry args={[0.05, 0.1, 2.8]} />
+          <meshStandardMaterial color="#00f3ff" emissive="#00f3ff" emissiveIntensity={3} toneMapped={false} />
+        </mesh>
+
+        {/* Spoiler */}
+        <mesh position={[0, 0.4, 1.4]}>
+          <boxGeometry args={[1.4, 0.05, 0.3]} />
+          <meshStandardMaterial color="#0a0a0a" metalness={0.8} />
+        </mesh>
+        <mesh position={[-0.6, 0.2, 1.4]}>
+          <boxGeometry args={[0.05, 0.4, 0.2]} />
+          <meshStandardMaterial color="#0a0a0a" />
+        </mesh>
+        <mesh position={[0.6, 0.2, 1.4]}>
+          <boxGeometry args={[0.05, 0.4, 0.2]} />
+          <meshStandardMaterial color="#0a0a0a" />
+        </mesh>
+
+        {/* Glowing Wheels (Cylinders) */}
+        {/* Front Left */}
+        <mesh position={[-0.8, -0.1, -1]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.3, 0.3, 0.2, 32]} />
+          <meshStandardMaterial color="#ff00ff" emissive="#ff00ff" emissiveIntensity={2} toneMapped={false} />
+        </mesh>
+        {/* Front Right */}
+        <mesh position={[0.8, -0.1, -1]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.3, 0.3, 0.2, 32]} />
+          <meshStandardMaterial color="#ff00ff" emissive="#ff00ff" emissiveIntensity={2} toneMapped={false} />
+        </mesh>
+        {/* Back Left */}
+        <mesh position={[-0.8, -0.1, 1]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.3, 0.3, 0.2, 32]} />
+          <meshStandardMaterial color="#ff00ff" emissive="#ff00ff" emissiveIntensity={2} toneMapped={false} />
+        </mesh>
+        {/* Back Right */}
+        <mesh position={[0.8, -0.1, 1]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.3, 0.3, 0.2, 32]} />
+          <meshStandardMaterial color="#ff00ff" emissive="#ff00ff" emissiveIntensity={2} toneMapped={false} />
+        </mesh>
+
+        {/* Tail Lights (Engine Glows) */}
+        <mesh position={[-0.5, 0, 1.51]}>
+          <boxGeometry args={[0.4, 0.1, 0.05]} />
+          <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={5} toneMapped={false} />
+        </mesh>
+        <mesh position={[0.5, 0, 1.51]}>
+          <boxGeometry args={[0.4, 0.1, 0.05]} />
+          <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={5} toneMapped={false} />
         </mesh>
       </mesh>
     </RigidBody>
