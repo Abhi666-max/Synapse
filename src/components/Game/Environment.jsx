@@ -2,14 +2,18 @@ import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { RigidBody } from '@react-three/rapier';
 import * as THREE from 'three';
+import { useGameStore } from '../../store/gameStore';
 
 export default function Environment() {
   const gridRef = useRef();
   
+  const speed = useGameStore((state) => state.speed);
+  const timeDilation = useGameStore((state) => state.timeDilation);
+  
   useFrame((state, delta) => {
     if (gridRef.current) {
-      // Simulate moving forward by sliding the texture
-      gridRef.current.material.map.offset.y -= delta * 2;
+      // Texture sliding speed based on actual game speed
+      gridRef.current.material.map.offset.y -= delta * (speed / 10) * timeDilation;
     }
   });
 
