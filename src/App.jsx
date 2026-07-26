@@ -4,9 +4,16 @@ import { Physics } from '@react-three/rapier';
 import { EffectComposer, Bloom, ChromaticAberration, Noise } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
 import MainMenu from './components/UI/MainMenu';
+import HUD from './components/UI/HUD';
+import GameOver from './components/UI/GameOver';
+import Player from './components/Game/Player';
+import Environment from './components/Game/Environment';
+import Obstacles from './components/Game/Obstacles';
 import { useGameStore } from './store/gameStore';
 
 function GameScene() {
+  const gameState = useGameStore((state) => state.gameState);
+
   return (
     <>
       {/* Lighting */}
@@ -15,19 +22,12 @@ function GameScene() {
       <pointLight position={[-10, 5, -10]} intensity={2} color="#ff00ff" />
       <fog attach="fog" args={['#050505', 10, 50]} />
 
-      {/* Placeholder for Physics World */}
-      <Physics gravity={[0, -30, 0]}>
-        {/* Placeholder for Player */}
-        <mesh position={[0, 1, 0]}>
-          <boxGeometry args={[1, 1, 2]} />
-          <meshStandardMaterial color="#00f3ff" emissive="#00f3ff" emissiveIntensity={2} toneMapped={false} />
-        </mesh>
-        
-        {/* Ground */}
-        <mesh position={[0, -0.5, 0]} receiveShadow>
-          <boxGeometry args={[20, 1, 100]} />
-          <meshStandardMaterial color="#1a1a1a" />
-        </mesh>
+      <Environment />
+
+      {/* Physics World */}
+      <Physics gravity={[0, -30, 0]} paused={gameState !== 'playing'}>
+        <Player />
+        <Obstacles />
       </Physics>
       
       {/* Post-Processing Effects for Premium Look */}
@@ -39,10 +39,10 @@ function GameScene() {
           intensity={1.5} 
         />
         <ChromaticAberration 
-          offset={[0.002, 0.002]} 
+          offset={[0.003, 0.003]} 
           blendFunction={BlendFunction.NORMAL} 
         />
-        <Noise opacity={0.02} />
+        <Noise opacity={0.03} />
       </EffectComposer>
     </>
   );
@@ -52,18 +52,19 @@ function App() {
   const gameState = useGameStore((state) => state.gameState);
 
   return (
-    <div className="w-screen h-screen bg-darkBg overflow-hidden relative">
+    <div className="w-screen h-screen bg-darkBg overflow-hidden relative font-inter">
       {/* UI Layer */}
       {gameState === 'menu' && <MainMenu />}
+      {gameState === 'playing' && <HUD />}
+      {gameState === 'gameover' && <GameOver />}
 
       {/* 3D Canvas Layer */}
       <Canvas 
         shadows 
         camera={{ position: [0, 5, 10], fov: 60 }} 
-        gl={{ antialias: false }} // Disabled for post-processing performance
+        gl={{ antialias: false, powerPreference: "high-performance" }} 
       >
         <Suspense fallback={null}>
-          {/* We always render the scene, but logic changes based on state inside components */}
           <GameScene />
         </Suspense>
       </Canvas>
