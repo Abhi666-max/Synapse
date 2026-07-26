@@ -22,10 +22,9 @@ function GameScene() {
       <pointLight position={[-10, 5, -10]} intensity={2} color="#ff00ff" />
       <fog attach="fog" args={['#050505', 10, 50]} />
 
-      <Environment />
-
       {/* Physics World */}
       <Physics gravity={[0, -30, 0]} paused={gameState !== 'playing'}>
+        <Environment />
         <Player />
         <Obstacles />
       </Physics>
